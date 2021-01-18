@@ -1,4 +1,5 @@
 require 'active_record'
+require_relative "./arel_visitors_depth_first.rb" unless Arel::Visitors.const_defined?(:DepthFirst)
 
 module MultiTenant
   class Table
@@ -31,6 +32,7 @@ module MultiTenant
       @arel_node = arel_node
       @known_relations = []
       @handled_relations = []
+      @discovering = false
     end
 
     def discover_relations
@@ -54,7 +56,7 @@ module MultiTenant
     end
   end
 
-  class ArelTenantVisitor < Arel::Visitors::DepthFirst
+  class ArelTenantVisitor < Arel::Visitors.const_defined?(:DepthFirst) ? Arel::Visitors::DepthFirst : ::MultiTenant::ArelVisitorsDepthFirst
     def initialize(arel)
       super(Proc.new {})
       @statement_node_id = nil
